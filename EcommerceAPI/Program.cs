@@ -13,6 +13,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddMemoryCache();
+
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
+
+    options.AssumeDefaultVersionWhenUnspecified = true;
+
+    options.ReportApiVersions = true;
+
+    options.ApiVersionReader =
+    new Asp.Versioning.UrlSegmentApiVersionReader();
+});
+
 builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddAutoMapper(cfg =>
@@ -32,6 +46,11 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderHistoryRepository, OrderHistoryRepository>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
 
 builder.Services.AddOpenApi();
 

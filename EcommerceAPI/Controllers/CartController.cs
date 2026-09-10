@@ -2,11 +2,14 @@
 using EcommerceAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Asp.Versioning;
 
 namespace EcommerceAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion(1.0)]
+    [ApiVersion(2.0)]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize(Roles = "Customer")]
     public class CartController : ControllerBase
     {

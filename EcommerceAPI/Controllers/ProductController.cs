@@ -2,22 +2,29 @@
 using EcommerceAPI.DTOs;
 using EcommerceAPI.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Asp.Versioning;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace EcommerceAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion(1.0)]
+    [ApiVersion(2.0)]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class ProductController : ControllerBase
     {
         private readonly IProductRepository _repository;
         private readonly IMapper _mapper;
+        private readonly IMemoryCache _cache;
 
         public ProductController(
-            IProductRepository repository,
-            IMapper mapper)
+             IProductRepository repository,
+             IMapper mapper,
+             IMemoryCache cache)
         {
             _repository = repository;
             _mapper = mapper;
+            _cache = cache;
         }
 
         // GET: api/Product
@@ -42,6 +49,14 @@ namespace EcommerceAPI.Controllers
                     "Page and pageSize must be greater than 0.");
             }
 
+            var cacheKey =
+    $"products:{search}:{categoryId}:{brandId}:{minPrice}:{maxPrice}:{minRating}:{sortBy}:{sortOrder}:{page}:{pageSize}";
+
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<ProductDto>? cachedProducts))
+            {
+                return Ok(cachedProducts);
+            }
+
             // Get products from Repository
             var products = await _repository.GetAllAsync(
                 search,
@@ -59,6 +74,10 @@ namespace EcommerceAPI.Controllers
             // Convert Product -> ProductDto
             var result =
                 _mapper.Map<IEnumerable<ProductDto>>(products);
+                _cache.Set(
+                          cacheKey,
+                          result,
+                          TimeSpan.FromMinutes(5));
 
             return Ok(result);
         }
