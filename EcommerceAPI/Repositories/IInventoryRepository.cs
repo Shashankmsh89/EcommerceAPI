@@ -7,5 +7,9 @@ namespace EcommerceAPI.Repositories
         Task UpdateInventoryAsync(
             UpdateInventoryDto request,
             CancellationToken cancellationToken);
+
+        Task BulkUpdateAsync(
+            IEnumerable<InventoryBulkDto> inventory,
+            CancellationToken cancellationToken);
     }
 }

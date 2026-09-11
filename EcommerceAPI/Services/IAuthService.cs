@@ -11,5 +11,9 @@ namespace EcommerceAPI.Services
         Task<LoginResponseDto?> LoginAsync(
             LoginRequestDto request,
             CancellationToken cancellationToken);
+
+        Task<LoginResponseDto?> RefreshTokenAsync(
+            string refreshToken,
+            CancellationToken cancellationToken);
     }
 }

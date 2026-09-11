@@ -39,6 +39,26 @@ namespace EcommerceAPI.Controllers
             });
         }
 
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken(
+    RefreshTokenRequestDto request,
+    CancellationToken cancellationToken)
+        {
+            var response = await _authService.RefreshTokenAsync(
+                request.RefreshToken,
+                cancellationToken);
+
+            if (response == null)
+            {
+                return Unauthorized(new
+                {
+                    message = "Invalid or expired refresh token."
+                });
+            }
+
+            return Ok(response);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login(
             LoginRequestDto request,

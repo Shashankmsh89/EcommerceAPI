@@ -13,5 +13,9 @@ namespace EcommerceAPI.Repositories
         Task<Customer?> GetByEmailAsync(
             string email,
             CancellationToken cancellationToken);
+
+        Task<Customer?> GetByIdAsync(
+            int customerId,
+            CancellationToken cancellationToken);
     }
 }

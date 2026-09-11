@@ -1,17 +1,11 @@
 ﻿namespace EcommerceAPI.DTOs
 {
-    public class LoginResponseDto
+    public class RefreshTokenResponseDto
     {
         public string Token { get; set; }
 
         public string RefreshToken { get; set; }
 
         public DateTime ExpiresOn { get; set; }
-
-        public int CustomerId { get; set; }
-
-        public string Email { get; set; }
-
-        public string Role { get; set; }
     }
 }

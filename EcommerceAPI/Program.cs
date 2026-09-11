@@ -8,12 +8,54 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
 builder.Services.AddMemoryCache();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.GlobalLimiter =
+        PartitionedRateLimiter.Create<HttpContext, string>(
+            httpContext =>
+            {
+                string userKey;
+
+                if (httpContext.User.Identity?.IsAuthenticated == true)
+                {
+                    userKey =
+                        httpContext.User.FindFirst(
+                            System.Security.Claims.ClaimTypes.NameIdentifier
+                        )?.Value
+                        ?? "authenticated-user";
+                }
+                else
+                {
+                    userKey =
+                        httpContext.Connection.RemoteIpAddress?
+                            .ToString()
+                        ?? "unknown";
+                }
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    userKey,
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder =
+                            QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0
+                    });
+            });
+});
+
+builder.Services.AddSingleton<IProductCacheService, ProductCacheService>();
 
 builder.Services.AddApiVersioning(options =>
 {
@@ -44,6 +86,7 @@ builder.Services.AddScoped<IProductPriceRepository,ProductPriceRepository>();
 builder.Services.AddScoped<IProductAvailabilityRepository, ProductAvailabilityRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
@@ -51,6 +94,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderHistoryRepository, OrderHistoryRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository,RefreshTokenRepository>();
 
 builder.Services.AddOpenApi();
 
@@ -103,6 +147,8 @@ app.UseCors("FrontendPolicy");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+
+app.UseRateLimiter();
 
 app.UseAuthorization();
 

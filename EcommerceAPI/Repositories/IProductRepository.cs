@@ -34,5 +34,9 @@ namespace EcommerceAPI.Repositories
         Task<bool> DeleteAsync(
             int id,
             CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Product>> BulkCreateAsync(
+           IEnumerable<ProductBulkDto> products,
+           CancellationToken cancellationToken);
     }
 }

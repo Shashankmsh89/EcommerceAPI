@@ -306,5 +306,76 @@ namespace EcommerceAPI.Repositories
 
             return Convert.ToInt32(result) == 1;
         }
+
+        public async Task<IEnumerable<Product>> BulkCreateAsync(
+    IEnumerable<ProductBulkDto> products,
+    CancellationToken cancellationToken)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            using var command = new SqlCommand(
+                "shashank.BulkCreateProducts",
+                connection);
+
+            command.CommandType = CommandType.StoredProcedure;
+
+            var table = new DataTable();
+
+            table.Columns.Add("ProductName", typeof(string));
+            table.Columns.Add("CategoryId", typeof(int));
+            table.Columns.Add("BrandId", typeof(int));
+            table.Columns.Add("Rating", typeof(decimal));
+            table.Columns.Add("Price", typeof(decimal));
+
+            foreach (var product in products)
+            {
+                table.Rows.Add(
+                    product.ProductName,
+                    product.CategoryId,
+                    product.BrandId,
+                    product.Rating,
+                    product.Price);
+            }
+
+            var parameter = command.Parameters.AddWithValue(
+                "@Products",
+                table);
+
+            parameter.SqlDbType = SqlDbType.Structured;
+            parameter.TypeName = "shashank.ProductBulkType";
+
+            await connection.OpenAsync(cancellationToken);
+
+            using var reader =
+                await command.ExecuteReaderAsync(cancellationToken);
+
+            var result = new List<Product>();
+
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                result.Add(new Product
+                {
+                    ProductId = reader.GetInt32(
+                        reader.GetOrdinal("ProductId")),
+
+                    ProductName = reader.GetString(
+                        reader.GetOrdinal("ProductName")),
+
+                    CategoryId = reader.GetInt32(
+                        reader.GetOrdinal("CategoryId")),
+
+                    BrandId = reader.GetInt32(
+                        reader.GetOrdinal("BrandId")),
+
+                    Rating = reader.GetDecimal(
+                        reader.GetOrdinal("Rating")),
+
+                    Price = reader.GetDecimal(
+                        reader.GetOrdinal("Price"))
+                });
+            }
+
+            return result;
+        }
     }
 }

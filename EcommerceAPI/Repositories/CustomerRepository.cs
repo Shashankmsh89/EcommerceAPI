@@ -48,6 +48,52 @@ namespace EcommerceAPI.Repositories
             return Convert.ToInt32(result);
         }
 
+        public async Task<Customer?> GetByIdAsync(
+    int customerId,
+    CancellationToken cancellationToken)
+        {
+            using var connection = new SqlConnection(
+                _configuration.GetConnectionString("DefaultConnection"));
+
+            using var command = new SqlCommand(
+                "shashank.GetCustomerById",
+                connection);
+
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.AddWithValue(
+                "@CustomerId",
+                customerId);
+
+            await connection.OpenAsync(cancellationToken);
+
+            using var reader = await command.ExecuteReaderAsync(
+                cancellationToken);
+
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                return new Customer
+                {
+                    CustomerId = reader.GetInt32(
+                        reader.GetOrdinal("CustomerId")),
+
+                    Email = reader.GetString(
+                        reader.GetOrdinal("Email")),
+
+                    PasswordHash = reader.GetString(
+                        reader.GetOrdinal("PasswordHash")),
+
+                    Role = reader.GetString(
+                        reader.GetOrdinal("Role")),
+
+                    CreatedOn = reader.GetDateTime(
+                        reader.GetOrdinal("CreatedOn"))
+                };
+            }
+
+            return null;
+        }
+
         public async Task<Customer?> GetByEmailAsync(
             string email,
             CancellationToken cancellationToken)
@@ -75,6 +121,8 @@ namespace EcommerceAPI.Repositories
             {
                 return null;
             }
+
+
 
             return new Customer
             {
