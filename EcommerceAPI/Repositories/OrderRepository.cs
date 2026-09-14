@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using EcommerceAPI.DTOs;
 using Microsoft.Data.SqlClient;
+using System.Security.Claims;
 
 namespace EcommerceAPI.Repositories
 {
@@ -106,6 +107,7 @@ namespace EcommerceAPI.Repositories
 
         public async Task<IEnumerable<OrderItemDto>> GetOrderItemsAsync(
             int orderId,
+            int customerId,
             CancellationToken cancellationToken)
         {
             var items = new List<OrderItemDto>();
@@ -120,6 +122,7 @@ namespace EcommerceAPI.Repositories
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.AddWithValue("@OrderId", orderId);
+            command.Parameters.AddWithValue("@CustomerId", customerId);
 
             await connection.OpenAsync(cancellationToken);
 

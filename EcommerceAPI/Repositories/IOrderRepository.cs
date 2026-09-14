@@ -11,6 +11,7 @@ namespace EcommerceAPI.Repositories
 
         Task<IEnumerable<OrderItemDto>> GetOrderItemsAsync(
             int orderId,
+            int customerId,
             CancellationToken cancellationToken);
     }
 }

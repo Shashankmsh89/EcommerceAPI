@@ -62,6 +62,8 @@ namespace EcommerceAPI.Controllers
                 inventory,
                 cancellationToken);
 
+            _productCacheService.Invalidate();
+
             return Ok(new
             {
                 message = "Inventory updated successfully."

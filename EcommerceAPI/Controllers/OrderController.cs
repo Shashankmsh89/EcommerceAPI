@@ -1,7 +1,8 @@
-﻿using EcommerceAPI.Repositories;
+﻿using Asp.Versioning;
+using EcommerceAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Asp.Versioning;
+using System.Security.Claims;
 
 namespace EcommerceAPI.Controllers
 {
@@ -25,10 +26,16 @@ namespace EcommerceAPI.Controllers
 
         [HttpGet("{orderId}")]
         public async Task<IActionResult> GetOrder(
-            int orderId,
-            [FromQuery] int customerId,
-            CancellationToken cancellationToken)
+    int orderId,
+    CancellationToken cancellationToken)
         {
+            var customerIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(customerIdClaim, out var customerId))
+            {
+                return Unauthorized();
+            }
+
             _logger.LogInformation(
                 "Getting OrderId {OrderId} for CustomerId {CustomerId}",
                 orderId,
@@ -54,18 +61,29 @@ namespace EcommerceAPI.Controllers
 
         [HttpGet("{orderId}/items")]
         public async Task<IActionResult> GetOrderItems(
-            int orderId,
-            CancellationToken cancellationToken)
+    int orderId,
+    CancellationToken cancellationToken)
         {
+            var customerIdClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(customerIdClaim, out var customerId))
+            {
+                return Unauthorized();
+            }
+
             _logger.LogInformation(
-                "Getting items for OrderId {OrderId}",
-                orderId);
+                "Getting items for OrderId {OrderId} for CustomerId {CustomerId}",
+                orderId,
+                customerId);
 
             var items = await _repository.GetOrderItemsAsync(
                 orderId,
+                customerId,
                 cancellationToken);
 
             return Ok(items);
         }
     }
+    
 }

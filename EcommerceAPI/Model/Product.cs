@@ -10,6 +10,8 @@ namespace EcommerceAPI.Models
         [StringLength(100)]
         public string ProductName { get; set; }
 
+        public string Description { get; set; }
+
         [Required]
         [Range(1, int.MaxValue)]
         public int CategoryId { get; set; }

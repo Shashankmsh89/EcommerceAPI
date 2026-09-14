@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EcommerceAPI.Services;
 using Asp.Versioning;
+using System.Security.Claims;
 
 namespace EcommerceAPI.Controllers
 {
@@ -42,12 +43,19 @@ namespace EcommerceAPI.Controllers
             return Ok(methods);
         }
 
-        [HttpGet("{customerId}")]
+        [HttpGet("summary")]
         public async Task<IActionResult> GetCheckoutSummary(
-            int customerId,
-            [FromQuery] int shippingMethodId,
-            CancellationToken cancellationToken)
+    [FromQuery] int shippingMethodId,
+    CancellationToken cancellationToken)
         {
+            var customerIdClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(customerIdClaim, out var customerId))
+            {
+                return Unauthorized();
+            }
+
             _logger.LogInformation(
                 "Getting checkout summary for CustomerId {CustomerId}",
                 customerId);
@@ -66,14 +74,24 @@ namespace EcommerceAPI.Controllers
     CreateOrderRequestDto request,
     CancellationToken cancellationToken)
         {
+            var customerIdClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(customerIdClaim, out var customerId))
+            {
+                return Unauthorized();
+            }
+
+            request.CustomerId = customerId;
+
             _logger.LogInformation(
                 "Creating order for CustomerId {CustomerId}",
-                request.CustomerId);
+                customerId);
 
             var orderId =
-                await _repository.CreateOrderAsync(
-                    request,
-                    cancellationToken);
+     await _repository.CreateOrderAsync(
+         request,
+         cancellationToken);
 
             var transactionReference =
                 await _paymentService.ProcessPaymentAsync(

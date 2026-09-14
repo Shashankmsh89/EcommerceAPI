@@ -104,6 +104,10 @@ namespace EcommerceAPI.Repositories
                     ProductName = reader.GetString(
                         reader.GetOrdinal("ProductName")),
 
+                    Description = reader.IsDBNull(reader.GetOrdinal("Description"))
+                        ? null
+                      : reader.GetString(reader.GetOrdinal("Description")),
+
                     CategoryId = reader.GetInt32(
                         reader.GetOrdinal("CategoryId")),
 
@@ -206,6 +210,10 @@ namespace EcommerceAPI.Repositories
                 request.ProductName);
 
             command.Parameters.AddWithValue(
+                "@Description",
+       (object?)request.Description ?? DBNull.Value);
+
+            command.Parameters.AddWithValue(
                 "@CategoryId",
                 request.CategoryId);
 
@@ -253,6 +261,10 @@ namespace EcommerceAPI.Repositories
             command.Parameters.AddWithValue(
                 "@ProductName",
                 request.ProductName);
+
+            command.Parameters.AddWithValue(
+                "@Description",
+       (object?)request.Description ?? DBNull.Value);
 
             command.Parameters.AddWithValue(
                 "@CategoryId",

@@ -120,6 +120,8 @@ namespace EcommerceAPI.Controllers
             int productId =
                 await _repository.CreateAsync(request, cancellationToken);
 
+            _productCacheService.Invalidate();
+
             return Ok(new
             {
                 message = "Product created successfully.",
@@ -141,6 +143,8 @@ namespace EcommerceAPI.Controllers
                 return NotFound("Product not found");
             }
 
+            _productCacheService.Invalidate();
+
             return Ok(new
             {
                 message = "Product updated successfully."
@@ -157,6 +161,8 @@ namespace EcommerceAPI.Controllers
             {
                 return NotFound("Product not found");
             }
+
+            _productCacheService.Invalidate();
 
             return Ok(new
             {
@@ -197,6 +203,8 @@ namespace EcommerceAPI.Controllers
             var result = await _repository.BulkCreateAsync(
                 products,
                 cancellationToken);
+
+            _productCacheService.Invalidate();
 
             return Ok(new
             {
